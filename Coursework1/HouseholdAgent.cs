@@ -9,7 +9,6 @@ namespace Coursework1
 {
     class HouseholdAgent : Agent
     {
-
         private int dailyNeed;
         private int dailyGenerate;
         private int utilityBuyPrice;
@@ -52,7 +51,6 @@ namespace Coursework1
                 default:
                     break;
             }
-
             String x;
 
             if (isSeller)
