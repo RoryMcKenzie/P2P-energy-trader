@@ -23,16 +23,12 @@ namespace Coursework1
         {
             Send("environment", "start");
         }
-
-        public override void ActDefault()
-        {
-            
-        }
-
+        
         public override void Act(Message message)
         {
             string messageC = message.Content;
 
+            //Use message.Parse for this instead, seems simpler
             string[] words = messageC.Split(' ');
 
             switch (words[0])
