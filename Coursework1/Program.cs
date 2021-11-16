@@ -7,7 +7,7 @@ namespace Coursework1
     {
         static void Main(string[] args)
         {
-            var env = new EnvironmentMas(noTurns: 100);
+            var env = new MyEnv(noTurns: 100);
             var e = new EnvironmentAgent(); env.Add(e, "environment");
 
             int noHouseholds = 10;
@@ -22,6 +22,20 @@ namespace Coursework1
 
             env.Start();
             Console.ReadLine();
+        }
+    }
+
+    public class MyEnv : EnvironmentMas
+    {
+        public MyEnv(int noTurns = 0, int delayAfterTurn = 0, bool randomOrder = true, Random rand = null, bool parallel = true)
+            : base(noTurns, delayAfterTurn, randomOrder, rand, parallel)
+        {
+            Memory["Turn"] = 0;
+        }
+
+        public override void TurnFinished(int turn)
+        {
+            Memory["Turn"] = turn + 1;  // turn is updated after TurnFinished
         }
     }
 }

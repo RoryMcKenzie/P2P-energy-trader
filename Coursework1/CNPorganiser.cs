@@ -12,16 +12,28 @@ namespace Coursework1
         private Dictionary<string,int> sellerList;
         private Dictionary<string,int> buyerList;
 
-        private List<int> proposals;
+        private Dictionary<string,int> proposals;
         int i = 0;
 
         public override void Setup()
         {
             sellerList = new Dictionary<string,int>();
             buyerList = new Dictionary<string,int>();
-            proposals = new List<int>();
+            proposals = new Dictionary<string,int>();
             SendCallsForProposals();
 
+        }
+
+        public override void ActDefault()
+        {
+          /* if (Environment.Memory["Turn"] == 3)
+            {
+                SendCallsForProposals();
+            } */
+           if (Environment.Memory["Turn"] == 6)
+            {
+                EvaluateProposals();
+            } 
         }
 
         public override void Act(Message message)
@@ -36,7 +48,9 @@ namespace Coursework1
                     if (i == 10)
                     {
                         SendCallsForProposals();
-                    }
+                        Console.WriteLine("cfpturn " + Environment.Memory["Turn"]);
+
+                    } 
                     break;
                 case "buyer":
                     buyerList.Add(message.Sender, Int32.Parse(parameters[1]));
@@ -45,11 +59,12 @@ namespace Coursework1
                     if (i == 10)
                     {
                         SendCallsForProposals();
-                    }
+                        Console.WriteLine("cfpturn " + Environment.Memory["Turn"]);
+                    } 
                     break;
                 case "propose":
-                    Console.WriteLine(message.Sender + " proposal received");
-                    proposals.Add(Int32.Parse(parameters[0]));
+                    Console.WriteLine(message.Sender + " proposal received " + Environment.Memory["Turn"]);
+                    proposals.Add(message.Sender, Int32.Parse(parameters[0]));
                     break;
             }
         }
@@ -59,6 +74,27 @@ namespace Coursework1
             foreach (string seller in sellerList.Keys)
             {
                 Send(seller, "cfp");
+            }
+        }
+
+        private void EvaluateProposals()
+        {
+            Console.WriteLine("evaluated proposals");
+            var highest = proposals.OrderByDescending(x => x.Value).FirstOrDefault();
+
+            Send(highest.Key, "accepted");
+            Console.WriteLine("accepted " + highest.Key);
+
+
+            foreach (string seller in sellerList.Keys)
+            {
+                if (seller == highest.Key)
+                {
+                    Send(seller, "accepted");
+                } else
+                {
+                    Send(seller, "rejected");
+                }
             }
         }
     }

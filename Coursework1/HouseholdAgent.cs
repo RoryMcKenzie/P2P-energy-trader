@@ -47,14 +47,23 @@ namespace Coursework1
                     Send("organiser", content);
                     break;
                 case "cfp":
-                    Console.WriteLine(this.Name + " cfp received");
+                    Console.WriteLine(this.Name + " cfp received " + Environment.Memory["Turn"]);
                     Propose();
+                    break;
+                case "accepted":
                     break;
             }
         }
+        //Propose in response to organiser CFP
         public void Propose()
         {
             Send("organiser", $"propose {amountToSell}");
+        }
+
+        //CFP for buyers
+        public void CallForProposals()
+        {
+
         }
     }
 }
