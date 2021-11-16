@@ -62,6 +62,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CNPorganiser.cs" />
     <Compile Include="EnvironmentAgent.cs" />
     <Compile Include="HouseholdAgent.cs" />
     <Compile Include="Program.cs" />

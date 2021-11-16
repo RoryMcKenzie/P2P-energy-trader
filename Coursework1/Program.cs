@@ -18,6 +18,7 @@ namespace Coursework1
             var h5 = new HouseholdAgent(); env.Add(h5, "agent5");
             var h6 = new HouseholdAgent(); env.Add(h6, "agent6");
 
+            var org1 = new CNPorganiser(); env.Add(org1, "organiser1");
 
             env.Start();
             Console.ReadLine();
