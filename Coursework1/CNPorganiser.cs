@@ -9,13 +9,18 @@ namespace Coursework1
 {
     class CNPorganiser : Agent
     {
-        List<string> sellerList;
-        List<string> buyerList;
+        private Dictionary<string,int> sellerList;
+        private Dictionary<string,int> buyerList;
+
+        private List<int> proposals;
+        int i = 0;
 
         public override void Setup()
         {
-            sellerList = new List<string>();
-            buyerList = new List<string>();
+            sellerList = new Dictionary<string,int>();
+            buyerList = new Dictionary<string,int>();
+            proposals = new List<int>();
+            SendCallsForProposals();
 
         }
 
@@ -24,14 +29,37 @@ namespace Coursework1
             message.Parse(out string action, out List<String> parameters);
             switch (action)
             {
-                case "buyer":
-                    buyerList.Add(message.Sender);
-                    break;
                 case "seller":
-                    sellerList.Add(message.Sender);
+                    sellerList.Add(message.Sender, Int32.Parse(parameters[0]));
+                    //Appalling workaround, has to be changed
+                    i++;
+                    if (i == 10)
+                    {
+                        SendCallsForProposals();
+                    }
+                    break;
+                case "buyer":
+                    buyerList.Add(message.Sender, Int32.Parse(parameters[1]));
+                    //Appalling workaround, has to be changed
+                    i++;
+                    if (i == 10)
+                    {
+                        SendCallsForProposals();
+                    }
+                    break;
+                case "propose":
+                    Console.WriteLine(message.Sender + " proposal received");
+                    proposals.Add(Int32.Parse(parameters[0]));
                     break;
             }
         }
 
+        private void SendCallsForProposals()
+        {
+            foreach (string seller in sellerList.Keys)
+            {
+                Send(seller, "cfp");
+            }
+        }
     }
 }

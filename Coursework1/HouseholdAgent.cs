@@ -42,13 +42,19 @@ namespace Coursework1
                         status = "buyer";
                         amountToBuy = dailyNeed - dailyGenerate;
                     }
-                    Send("organiser1", status);
+                    string content = $"{status} {amountToSell} {amountToBuy}";
+                    Console.WriteLine(message.Format() + "\n" + this.Name + " - Needs:" + dailyNeed.ToString() + "kWh, Generates: " + dailyGenerate.ToString() + "kWh, BuyPrice: £" + utilityBuyPrice.ToString() + ", SellPrice: £" + utilitySellPrice.ToString() + " " + status);
+                    Send("organiser", content);
                     break;
-                default:
+                case "cfp":
+                    Console.WriteLine(this.Name + " cfp received");
+                    Propose();
                     break;
             }
-                       
-            Console.WriteLine(message.Format() + "\n" + this.Name + " - Needs:" + dailyNeed.ToString() + "kWh, Generates: " + dailyGenerate.ToString() + "kWh, BuyPrice: £" + utilityBuyPrice.ToString() + ", SellPrice: £" + utilitySellPrice.ToString() + " " + status);
+        }
+        public void Propose()
+        {
+            Send("organiser", $"propose {amountToSell}");
         }
     }
 }
