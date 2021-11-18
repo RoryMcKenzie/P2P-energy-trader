@@ -20,8 +20,7 @@ namespace Coursework1
             sellerList = new Dictionary<string,int>();
             buyerList = new Dictionary<string,int>();
             proposals = new Dictionary<string,int>();
-            SendCallsForProposals();
-
+            //SendCallsForProposals();
         }
 
         public override void ActDefault()
@@ -49,7 +48,6 @@ namespace Coursework1
                     {
                         SendCallsForProposals();
                         Console.WriteLine("cfpturn " + Environment.Memory["Turn"]);
-
                     } 
                     break;
                 case "buyer":
@@ -73,25 +71,25 @@ namespace Coursework1
         {
             foreach (string seller in sellerList.Keys)
             {
-                Send(seller, "cfp");
+                Send(seller, "organisercfp");
             }
         }
 
         private void EvaluateProposals()
         {
-            Console.WriteLine("evaluated proposals");
+            Console.WriteLine("evaluated proposals " + Environment.Memory["Turn"]);
+
             var highest = proposals.OrderByDescending(x => x.Value).FirstOrDefault();
 
-            Send(highest.Key, "accepted");
-            Console.WriteLine("accepted " + highest.Key);
-
+            Console.WriteLine("accepted " + highest.Key + " " + Environment.Memory["Turn"]);
 
             foreach (string seller in sellerList.Keys)
             {
                 if (seller == highest.Key)
                 {
                     Send(seller, "accepted");
-                } else
+                }
+                else
                 {
                     Send(seller, "rejected");
                 }
