@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using ActressMas;
 
@@ -21,6 +22,7 @@ namespace Coursework1
         private List <string> buyerList;
         private Dictionary<string, int> proposals;
 
+        private int j = 0;
 
         public override void Setup()
         {
@@ -31,10 +33,13 @@ namespace Coursework1
 
         public override void ActDefault()
         {
-           if (Environment.Memory["Turn"] == 9 && proposals.Count != 0)
+            /*if (proposals.Count != 0)
             {
-                EvaluateProposals();
-            } 
+                if (Environment.Memory["Turn"] == 9 || Environment.Memory["Turn"] == 16)
+                {
+                    EvaluateProposals();
+                }
+            } */
         }
 
         public override void Act(Message message)
@@ -57,35 +62,55 @@ namespace Coursework1
                         status = "buyer";
                         amountToBuy = dailyNeed - dailyGenerate;
                     }
-                    Console.WriteLine("inform " + Environment.Memory["Turn"]);
+                    
                     string content = $"{status} {amountToSell} {amountToBuy}";
                     //Console.WriteLine(message.Format() + "\n" + this.Name + " - Needs:" + dailyNeed.ToString() + "kWh, Generates: " + dailyGenerate.ToString() + "kWh, BuyPrice: £" + utilityBuyPrice.ToString() + ", SellPrice: £" + utilitySellPrice.ToString() + " " + status);
                     Send("organiser", content);
+                    Console.WriteLine("inform " + Environment.Memory["Turn"]);
                     break;
                 /*case "query":
                     string content1 = $"{status} {amountToSell} {amountToBuy}";
                     Send(message.Sender, content1);
                     break; */
                 case "organisercfp":
-                    Console.WriteLine(this.Name + " cfp received " + Environment.Memory["Turn"]);
-                    SellerPropose();
+                    if (amountToSell > 0)
+                    {
+                        Console.WriteLine(this.Name + " cfp received " + Environment.Memory["Turn"]);
+                        SellerPropose();
+                    }
                     break;
                 case "accepted":
                     CallForProposals();
                     break;
                 //buyer receives seller cfp
                 case "sellercfp":
-                    if (status == "buyer")
+                    if (status == "buyer" && amountToBuy > 0)
                     {
                         Send(message.Sender, $"propose {utilityBuyPrice - 1}");
                         Console.WriteLine("buyerpropose " + Environment.Memory["Turn"]);
                     }
+                    else
+                    {
+                        Send(message.Sender, "nopropose");
+                    }
                     break;
                 //seller receives proposal from buyer
                 case "propose":
-                    Console.WriteLine(message.Sender + " " + parameters[0]);
+                    j++;
                     proposals.Add(message.Sender, Int32.Parse(parameters[0]));
                     Console.WriteLine("receiveproposal " + Environment.Memory["Turn"]);
+                    if (j == 9)
+                    {
+                        EvaluateProposals();
+                    }
+                    
+                    break;
+                case "nopropose":
+                    j++;
+                    if (j == 9)
+                    {
+                        EvaluateProposals();
+                    }
                     break;
                 case "bidaccepted":
                     money -= Int32.Parse(parameters[0]);
@@ -105,10 +130,11 @@ namespace Coursework1
 
             Console.WriteLine("accepted " + highest.Key + " " + Environment.Memory["Turn"]);
             
+            Send("organiser", "reset");
+
+            Reset();
         }
-
-       
-
+        
         //Propose in response to organiser CFP
         public void SellerPropose()
         {
@@ -121,6 +147,12 @@ namespace Coursework1
             Console.WriteLine("sellercfp " + Environment.Memory["Turn"]);
             Broadcast("sellercfp");
             //If cfp sent to all agents, only the buyers will respond with an offer
+        }
+
+        public void Reset()
+        {
+            j = 0;
+            proposals.Clear();
         }
     }
 }

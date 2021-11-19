@@ -9,18 +9,17 @@ namespace Coursework1
 {
     class CNPorganiser : Agent
     {
-        private Dictionary<string,int> sellerList;
-        private Dictionary<string,int> buyerList;
+        private List<string> sellerList;
+        //private Dictionary<string,int> buyerList;
 
         private Dictionary<string,int> proposals;
-        int i = 0;
+        private int i = 0;
+        private int j = 0;
 
         public override void Setup()
         {
-            sellerList = new Dictionary<string,int>();
-            buyerList = new Dictionary<string,int>();
+            sellerList = new List<string>();
             proposals = new Dictionary<string,int>();
-            //SendCallsForProposals();
         }
 
         public override void ActDefault()
@@ -28,11 +27,11 @@ namespace Coursework1
           /* if (Environment.Memory["Turn"] == 3)
             {
                 SendCallsForProposals();
-            } */
-           if (Environment.Memory["Turn"] == 6)
-            {
-                EvaluateProposals();
             } 
+           if (Environment.Memory["Turn"] == 5 || Environment.Memory["Turn"] == 13)
+           { 
+               EvaluateProposals();
+           } */
         }
 
         public override void Act(Message message)
@@ -41,7 +40,7 @@ namespace Coursework1
             switch (action)
             {
                 case "seller":
-                    sellerList.Add(message.Sender, Int32.Parse(parameters[0]));
+                    sellerList.Add(message.Sender);
                     //Appalling workaround, has to be changed
                     i++;
                     if (i == 10)
@@ -51,7 +50,6 @@ namespace Coursework1
                     } 
                     break;
                 case "buyer":
-                    buyerList.Add(message.Sender, Int32.Parse(parameters[1]));
                     //Appalling workaround, has to be changed
                     i++;
                     if (i == 10)
@@ -61,15 +59,25 @@ namespace Coursework1
                     } 
                     break;
                 case "propose":
+                    j++;
                     Console.WriteLine(message.Sender + " proposal received " + Environment.Memory["Turn"]);
                     proposals.Add(message.Sender, Int32.Parse(parameters[0]));
+                    if (j == sellerList.Count)
+                    {
+                        EvaluateProposals();
+                    }
+                    break;
+                case "reset":
+                    proposals.Clear();
+                    SendCallsForProposals();
+                    j = 0;
                     break;
             }
         }
 
         private void SendCallsForProposals()
         {
-            foreach (string seller in sellerList.Keys)
+            foreach (string seller in sellerList)
             {
                 Send(seller, "organisercfp");
             }
@@ -83,15 +91,11 @@ namespace Coursework1
 
             Console.WriteLine("accepted " + highest.Key + " " + Environment.Memory["Turn"]);
 
-            foreach (string seller in sellerList.Keys)
+            foreach (string seller in sellerList)
             {
                 if (seller == highest.Key)
                 {
                     Send(seller, "accepted");
-                }
-                else
-                {
-                    Send(seller, "rejected");
                 }
             }
         }
