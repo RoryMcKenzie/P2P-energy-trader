@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,18 +21,6 @@ namespace Coursework1
         {
             sellerList = new List<string>();
             proposals = new Dictionary<string,int>();
-        }
-
-        public override void ActDefault()
-        {
-          /* if (Environment.Memory["Turn"] == 3)
-            {
-                SendCallsForProposals();
-            } 
-           if (Environment.Memory["Turn"] == 5 || Environment.Memory["Turn"] == 13)
-           { 
-               EvaluateProposals();
-           } */
         }
 
         public override void Act(Message message)
@@ -67,6 +56,13 @@ namespace Coursework1
                         EvaluateProposals();
                     }
                     break;
+                case "nopropose":
+                    j++;
+                    if (j == sellerList.Count)
+                    {
+                        EvaluateProposals();
+                    } 
+                    break;
                 case "reset":
                     proposals.Clear();
                     SendCallsForProposals();
@@ -85,18 +81,26 @@ namespace Coursework1
 
         private void EvaluateProposals()
         {
-            Console.WriteLine("evaluated proposals " + Environment.Memory["Turn"]);
-
-            var highest = proposals.OrderByDescending(x => x.Value).FirstOrDefault();
-
-            Console.WriteLine("accepted " + highest.Key + " " + Environment.Memory["Turn"]);
-
-            foreach (string seller in sellerList)
+            if (proposals.Count != 0)
             {
-                if (seller == highest.Key)
+
+                Console.WriteLine("organiser evaluated proposals " + Environment.Memory["Turn"]);
+
+                var highest = proposals.OrderByDescending(x => x.Value).FirstOrDefault();
+
+                Console.WriteLine("organiser accepted " + highest.Key + " " + Environment.Memory["Turn"]);
+
+                foreach (string seller in sellerList)
                 {
-                    Send(seller, "accepted");
+                    if (seller == highest.Key)
+                    {
+                        Send(seller, "accepted");
+                    }
                 }
+            }
+            else
+            {
+                Console.WriteLine("no sellers left");
             }
         }
     }

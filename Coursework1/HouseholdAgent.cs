@@ -19,7 +19,6 @@ namespace Coursework1
         private int amountToSell = 0;
         private int money = 0;
 
-        private List <string> buyerList;
         private Dictionary<string, int> proposals;
 
         private int j = 0;
@@ -27,19 +26,7 @@ namespace Coursework1
         public override void Setup()
         {
             proposals = new Dictionary<string, int>();
-            buyerList = new List<string>();
             Send("environment", "start");
-        }
-
-        public override void ActDefault()
-        {
-            /*if (proposals.Count != 0)
-            {
-                if (Environment.Memory["Turn"] == 9 || Environment.Memory["Turn"] == 16)
-                {
-                    EvaluateProposals();
-                }
-            } */
         }
 
         public override void Act(Message message)
@@ -77,6 +64,10 @@ namespace Coursework1
                     {
                         Console.WriteLine(this.Name + " cfp received " + Environment.Memory["Turn"]);
                         SellerPropose();
+                    }
+                    else
+                    {
+                        Send("organiser", "nopropose");
                     }
                     break;
                 case "accepted":
@@ -121,18 +112,25 @@ namespace Coursework1
 
         public void EvaluateProposals()
         {
-            var highest = proposals.OrderByDescending(x => x.Value).FirstOrDefault();
+            if (proposals.Count != 0)
+            {
+                var highest = proposals.OrderByDescending(x => x.Value).FirstOrDefault();
 
-            Send(highest.Key, $"bidaccepted {highest.Value}");
+                Send(highest.Key, $"bidaccepted {highest.Value}");
 
-            amountToSell--;
-            money += highest.Value;
+                amountToSell--;
+                money += highest.Value;
 
-            Console.WriteLine("accepted " + highest.Key + " " + Environment.Memory["Turn"]);
-            
-            Send("organiser", "reset");
+                Console.WriteLine("seller accepted " + highest.Key + " " + Environment.Memory["Turn"]);
 
-            Reset();
+                Send("organiser", "reset");
+
+                Reset();
+            }
+            else
+            {
+                Console.WriteLine("no buyers left");
+            }
         }
         
         //Propose in response to organiser CFP
