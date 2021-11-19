@@ -31,10 +31,10 @@ namespace Coursework1
 
         public override void ActDefault()
         {
-            if (Environment.Memory["Turn"] == 9)
+           if (Environment.Memory["Turn"] == 9 && proposals.Count != 0)
             {
                 EvaluateProposals();
-            }
+            } 
         }
 
         public override void Act(Message message)
@@ -73,11 +73,19 @@ namespace Coursework1
                 case "accepted":
                     CallForProposals();
                     break;
+                //buyer receives seller cfp
                 case "sellercfp":
-                    Send(message.Sender, $"propose {utilityBuyPrice - 1}");
+                    if (status == "buyer")
+                    {
+                        Send(message.Sender, $"propose {utilityBuyPrice - 1}");
+                        Console.WriteLine("buyerpropose " + Environment.Memory["Turn"]);
+                    }
                     break;
+                //seller receives proposal from buyer
                 case "propose":
+                    Console.WriteLine(message.Sender + " " + parameters[0]);
                     proposals.Add(message.Sender, Int32.Parse(parameters[0]));
+                    Console.WriteLine("receiveproposal " + Environment.Memory["Turn"]);
                     break;
                 case "bidaccepted":
                     money -= Int32.Parse(parameters[0]);
@@ -113,7 +121,6 @@ namespace Coursework1
             Console.WriteLine("sellercfp " + Environment.Memory["Turn"]);
             Broadcast("sellercfp");
             //If cfp sent to all agents, only the buyers will respond with an offer
-            Console.WriteLine("enough");
         }
     }
 }
