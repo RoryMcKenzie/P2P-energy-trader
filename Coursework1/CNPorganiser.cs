@@ -101,6 +101,7 @@ namespace Coursework1
             else
             {
                 Console.WriteLine("no sellers left");
+                Broadcast("auctionend");
             }
         }
     }

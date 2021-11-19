@@ -55,10 +55,6 @@ namespace Coursework1
                     Send("organiser", content);
                     Console.WriteLine("inform " + Environment.Memory["Turn"]);
                     break;
-                /*case "query":
-                    string content1 = $"{status} {amountToSell} {amountToBuy}";
-                    Send(message.Sender, content1);
-                    break; */
                 case "organisercfp":
                     if (amountToSell > 0)
                     {
@@ -107,6 +103,9 @@ namespace Coursework1
                     money -= Int32.Parse(parameters[0]);
                     amountToBuy--;
                     break;
+                case "auctionend":
+                    BuyAndSellFromProvider();
+                    break;
             }
         }
 
@@ -130,6 +129,8 @@ namespace Coursework1
             else
             {
                 Console.WriteLine("no buyers left");
+                Broadcast("auctionend");
+                BuyAndSellFromProvider();
             }
         }
         
@@ -151,6 +152,23 @@ namespace Coursework1
         {
             j = 0;
             proposals.Clear();
+        }
+
+        public void BuyAndSellFromProvider()
+        {
+            if (amountToBuy > 0)
+            {
+                money -= (amountToBuy * utilityBuyPrice);
+                amountToBuy = 0;
+            }
+
+            if (amountToSell > 0)
+            {
+                money += (amountToSell * utilitySellPrice);
+                amountToSell = 0;
+            }
+            
+            Console.WriteLine($"{this.Name}: £{money}");
         }
     }
 }
