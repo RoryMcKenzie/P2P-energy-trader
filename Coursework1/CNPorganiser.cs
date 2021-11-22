@@ -21,6 +21,8 @@ namespace Coursework1
             proposals = new Dictionary<string,int>();
         }
 
+        //have actdefault with variable that decrements and then if it's 0 do the thing
+        
         public override void Act(Message message)
         {
             message.Parse(out string action, out List<String> parameters);

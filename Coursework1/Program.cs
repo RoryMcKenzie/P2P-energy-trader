@@ -27,7 +27,7 @@ namespace Coursework1
 
     public class MyEnv : EnvironmentMas
     {
-        public MyEnv(int noTurns = 0, int delayAfterTurn = 0, bool randomOrder = true, Random rand = null, bool parallel = true)
+        public MyEnv(int noTurns = 0, int delayAfterTurn = 0, bool randomOrder = true, Random rand = null, bool parallel = false)
             : base(noTurns, delayAfterTurn, randomOrder, rand, parallel)
         {
             Memory["Turn"] = 0;
