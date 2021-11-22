@@ -8,7 +8,7 @@ namespace Coursework1
     class CNPorganiser : Agent
     {
         private List<string> sellerList;
-        //private Dictionary<string,int> buyerList;
+        //add buyerlist
 
         private Dictionary<string,int> proposals;
         private int i = 0;
@@ -17,6 +17,7 @@ namespace Coursework1
         public override void Setup()
         {
             sellerList = new List<string>();
+            //add buyerlist
             proposals = new Dictionary<string,int>();
         }
 
@@ -27,7 +28,7 @@ namespace Coursework1
             {
                 case "seller":
                     sellerList.Add(message.Sender);
-                    //Appalling workaround, has to be changed
+                    //workaround, to be changed
                     i++;
                     if (i == 10)
                     {
@@ -36,7 +37,8 @@ namespace Coursework1
                     } 
                     break;
                 case "buyer":
-                    //Appalling workaround, has to be changed
+                    //workaround, to be changed
+                    //add line of code adding the name to a buyers list, which can then be requested by each seller
                     i++;
                     if (i == 10)
                     {
@@ -46,7 +48,7 @@ namespace Coursework1
                     break;
                 case "propose":
                     j++;
-                    Console.WriteLine(message.Sender + " proposal received " + Environment.Memory["Turn"]);
+                    //Console.WriteLine(message.Sender + " proposal received " + Environment.Memory["Turn"]);
                     proposals.Add(message.Sender, Int32.Parse(parameters[0]));
                     if (j == sellerList.Count)
                     {
@@ -83,6 +85,7 @@ namespace Coursework1
 
                 Console.WriteLine("organiser evaluated proposals " + Environment.Memory["Turn"]);
 
+                //figure out how this works with bids which are the same, maybe change it 
                 var highest = proposals.OrderByDescending(x => x.Value).FirstOrDefault();
 
                 Console.WriteLine("organiser accepted " + highest.Key + " " + Environment.Memory["Turn"]);

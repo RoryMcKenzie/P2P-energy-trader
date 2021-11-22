@@ -48,7 +48,7 @@ namespace Coursework1
                     }
                     
                     string content = $"{status} {amountToSell} {amountToBuy}";
-                    //Console.WriteLine(message.Format() + "\n" + this.Name + " - Needs:" + dailyNeed.ToString() + "kWh, Generates: " + dailyGenerate.ToString() + "kWh, BuyPrice: £" + utilityBuyPrice.ToString() + ", SellPrice: £" + utilitySellPrice.ToString() + " " + status);
+                    Console.WriteLine(this.Name + " - Needs:" + dailyNeed.ToString() + "kWh, Generates: " + dailyGenerate.ToString() + "kWh, BuyPrice: £" + utilityBuyPrice.ToString() + ", SellPrice: £" + utilitySellPrice.ToString() + " " + status);
                     Send("organiser", content);
                     Console.WriteLine("inform " + Environment.Memory["Turn"]);
                     break;
@@ -68,6 +68,7 @@ namespace Coursework1
                     break;
                 //buyer receives seller cfp
                 case "sellercfp":
+                    //if I implement the buyerlist i can remove 'status == "buyer"' because it will only be sent to buyers
                     if (status == "buyer" && amountToBuy > 0)
                     {
                         Send(message.Sender, $"propose {utilityBuyPrice - 1}");
@@ -83,14 +84,15 @@ namespace Coursework1
                     j++;
                     proposals.Add(message.Sender, Int32.Parse(parameters[0]));
                     Console.WriteLine("receiveproposal " + Environment.Memory["Turn"]);
+                    //make this if (j == buyerList.Count) once buyerlist implemented
                     if (j == 9)
                     {
                         EvaluateProposals();
-                    }
-                    
+                    }                    
                     break;
                 case "nopropose":
                     j++;
+                    //make this if (j == buyerList.Count) once buyerlist implemented
                     if (j == 9)
                     {
                         EvaluateProposals();
@@ -109,7 +111,9 @@ namespace Coursework1
         public void EvaluateProposals()
         {
             if (proposals.Count != 0)
+
             {
+                //figure out how this works with bids which are the same, maybe change it 
                 var highest = proposals.OrderByDescending(x => x.Value).FirstOrDefault();
 
                 Send(highest.Key, $"bidaccepted {highest.Value}");
@@ -140,6 +144,8 @@ namespace Coursework1
         //CFP for buyers
         public void CallForProposals()
         {
+            //TODO: make it so instead of broadcasting, it sends a message to organiser and gets a list of buyers and just sends it to them
+            //Will only need to do this once per seller agent, just check if buyerlist.Count != 0
             Console.WriteLine("sellercfp " + Environment.Memory["Turn"]);
             Broadcast("sellercfp");
             //If cfp sent to all agents, only the buyers will respond with an offer
