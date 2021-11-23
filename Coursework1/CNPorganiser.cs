@@ -8,20 +8,17 @@ namespace Coursework1
     class CNPorganiser : Agent
     {
         private List<string> sellerList;
-        //add buyerlist
+        private List<string> buyerList;
 
         private Dictionary<string,int> proposals;
-        private int i = 0;
         private int j = 0;
 
         public override void Setup()
         {
             sellerList = new List<string>();
-            //add buyerlist
+            buyerList = new List<string>();
             proposals = new Dictionary<string,int>();
         }
-
-        //have actdefault with variable that decrements and then if it's 0 do the thing
         
         public override void Act(Message message)
         {
@@ -30,19 +27,15 @@ namespace Coursework1
             {
                 case "seller":
                     sellerList.Add(message.Sender);
-                    //workaround, to be changed
-                    i++;
-                    if (i == 10)
+                    if (buyerList.Count + sellerList.Count == 10)
                     {
                         SendCallsForProposals();
                         Console.WriteLine("cfpturn " + Environment.Memory["Turn"]);
                     } 
                     break;
                 case "buyer":
-                    //workaround, to be changed
-                    //add line of code adding the name to a buyers list, which can then be requested by each seller
-                    i++;
-                    if (i == 10)
+                    buyerList.Add(message.Sender);
+                    if (buyerList.Count + sellerList.Count == 10)
                     {
                         SendCallsForProposals();
                         Console.WriteLine("cfpturn " + Environment.Memory["Turn"]);
