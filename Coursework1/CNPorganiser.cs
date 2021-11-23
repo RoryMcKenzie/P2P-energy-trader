@@ -43,7 +43,6 @@ namespace Coursework1
                     break;
                 case "propose":
                     j++;
-                    //Console.WriteLine(message.Sender + " proposal received " + Environment.Memory["Turn"]);
                     proposals.Add(message.Sender, Int32.Parse(parameters[0]));
                     if (j == sellerList.Count)
                     {
@@ -61,6 +60,14 @@ namespace Coursework1
                     proposals.Clear();
                     SendCallsForProposals();
                     j = 0;
+                    break;
+                case "buyerlistrequest":
+                    string buyerliststring = "";
+                    foreach(string buyer in buyerList)
+                    {
+                        buyerliststring += (" " + buyer);
+                    }                    
+                    Send(message.Sender, "buyerlist" + buyerliststring);
                     break;
             }
         }

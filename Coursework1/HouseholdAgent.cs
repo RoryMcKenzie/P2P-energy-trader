@@ -17,12 +17,14 @@ namespace Coursework1
         private int money = 0;
 
         private Dictionary<string, int> proposals;
+        private List<string> buyerList;
 
         private int j = 0;
 
         public override void Setup()
         {
             proposals = new Dictionary<string, int>();
+            buyerList = new List<string>();
             Send("environment", "start");
         }
 
@@ -45,8 +47,7 @@ namespace Coursework1
                     {
                         status = "buyer";
                         amountToBuy = dailyNeed - dailyGenerate;
-                    }
-                    
+                    }                    
                     string content = $"{status} {amountToSell} {amountToBuy}";
                     Console.WriteLine(this.Name + " - Needs:" + dailyNeed.ToString() + "kWh, Generates: " + dailyGenerate.ToString() + "kWh, BuyPrice: £" + utilityBuyPrice.ToString() + ", SellPrice: £" + utilitySellPrice.ToString() + " " + status);
                     Send("organiser", content);
@@ -68,8 +69,7 @@ namespace Coursework1
                     break;
                 //buyer receives seller cfp
                 case "sellercfp":
-                    //if I implement the buyerlist i can remove 'status == "buyer"' because it will only be sent to buyers
-                    if (status == "buyer" && amountToBuy > 0)
+                    if (amountToBuy > 0)
                     {
                         Send(message.Sender, $"propose {utilityBuyPrice - 1}");
                         Console.WriteLine("buyerpropose " + Environment.Memory["Turn"]);
@@ -84,16 +84,14 @@ namespace Coursework1
                     j++;
                     proposals.Add(message.Sender, Int32.Parse(parameters[0]));
                     Console.WriteLine("receiveproposal " + Environment.Memory["Turn"]);
-                    //make this if (j == buyerList.Count) once buyerlist implemented
-                    if (j == 9)
+                    if (j == buyerList.Count)
                     {
                         EvaluateProposals();
                     }                    
                     break;
                 case "nopropose":
                     j++;
-                    //make this if (j == buyerList.Count) once buyerlist implemented
-                    if (j == 9)
+                    if (j == buyerList.Count)
                     {
                         EvaluateProposals();
                     }
@@ -104,6 +102,13 @@ namespace Coursework1
                     break;
                 case "auctionend":
                     BuyAndSellFromProvider();
+                    break;
+                case "buyerlist":
+                    foreach(string buyer in parameters)
+                    {
+                        buyerList.Add(buyer);
+                    }
+                    CallForProposals();
                     break;
             }
         }
@@ -144,11 +149,20 @@ namespace Coursework1
         //CFP for buyers
         public void CallForProposals()
         {
-            //TODO: make it so instead of broadcasting, it sends a message to organiser and gets a list of buyers and just sends it to them
-            //Will only need to do this once per seller agent, just check if buyerlist.Count != 0
-            Console.WriteLine("sellercfp " + Environment.Memory["Turn"]);
-            Broadcast("sellercfp");
-            //If cfp sent to all agents, only the buyers will respond with an offer
+            if (buyerList.Count == 0)
+            {
+                //sends a message to organiser and gets a list of buyers 
+                Send("organiser", "buyerlistrequest");
+                Console.WriteLine("buyerlistrequest");
+            }
+            else
+            {
+                Console.WriteLine("sellercfp " + Environment.Memory["Turn"]);
+                foreach (string buyer in buyerList)
+                {
+                    Send(buyer, "sellercfp");
+                }
+            }
         }
 
         public void Reset()
