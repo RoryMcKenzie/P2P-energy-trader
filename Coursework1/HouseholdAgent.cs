@@ -17,8 +17,10 @@ namespace Coursework1
         private int money = 0;
 
         private int boughtFromSeller = 0;
+        private int boughtFromSellerMoney = 0;
         private int boughtFromUtility = 0;
 
+        private int soldToBuyerMoney = 0;
         private int soldToBuyer = 0;
         private int soldToUtility = 0;
 
@@ -105,6 +107,7 @@ namespace Coursework1
                 case "bidaccepted":
                     money -= Int32.Parse(parameters[0]);
                     boughtFromSeller++;
+                    boughtFromSellerMoney += Int32.Parse(parameters[0]);
                     amountToBuy--;
                     break;
                 case "auctionend":
@@ -141,6 +144,7 @@ namespace Coursework1
 
                 amountToSell--;
                 soldToBuyer++;
+                soldToBuyerMoney += paid.Value;
                 money += paid.Value;
 
                 Console.WriteLine($"{highest.Key} wins and pays {paid.Value} pence" + " " + Environment.Memory["Turn"]);
@@ -213,13 +217,33 @@ namespace Coursework1
                 Console.WriteLine($"{this.Name} bought {totalBought} kWh for a total cost of {(Math.Abs(money))} pence");
                 Console.WriteLine($"To buy this only from the utility company would've cost {totalBought * utilityBuyPrice} pence");
 
+                string first = boughtFromSeller.ToString();
+                string second = boughtFromSellerMoney.ToString();
+                string third = boughtFromUtility.ToString();
+                string fourth = (boughtFromUtility * utilityBuyPrice).ToString();
+                string fifth = money.ToString();
+
+                //amount bought from sellers, money from sellers, amount bought from utility, money from utility, total
+
+                var newLine = string.Format("{0},{1},{2},{3},{4}", first, second, third, fourth, fifth);
+                Globals.buyercsv.AppendLine(newLine);
             }
             else
             {
                 int totalSold = soldToBuyer + soldToUtility;
                 Console.WriteLine($"{this.Name} sold {soldToBuyer + soldToUtility} kWh for a total of {(money)} pence");
-                Console.WriteLine($"To sell this only to the utility company would've only made {totalSold * utilitySellPrice} pence profit");
+                Console.WriteLine($"To sell this only to the utility company would've only made {totalSold * utilitySellPrice} pence");
 
+                string first = soldToBuyer.ToString();
+                string second = soldToBuyerMoney.ToString();
+                string third = soldToUtility.ToString();
+                string fourth = (soldToUtility * utilitySellPrice).ToString();
+                string fifth = money.ToString();
+
+                //amount sold to buyers, money from buyers, amount sold to utility, money from utility, total
+
+                var newLine = string.Format("{0},{1},{2},{3},{4}", first, second, third, fourth, fifth);
+                Globals.sellercsv.AppendLine(newLine);
             }
         }
     }

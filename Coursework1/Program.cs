@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Text;
 using ActressMas;
 
 namespace Coursework1
@@ -20,9 +22,24 @@ namespace Coursework1
 
             var org1 = new CNPorganiser(); env.Add(org1, "organiser");
 
+            var sellerFilepath = @"C:\Users\rorym\Documents\General\Uni\MAS\seller_results.csv";
+            var buyerFilepath = @"C:\Users\rorym\Documents\General\Uni\MAS\buyer_results.csv";
+
             env.Start();
-            Console.ReadLine();
+          
+            File.AppendAllText(sellerFilepath, Globals.sellercsv.ToString());
+            File.AppendAllText(sellerFilepath, "\n");
+
+            File.AppendAllText(buyerFilepath, Globals.buyercsv.ToString());
+            File.AppendAllText(buyerFilepath, "\n");
+            //Console.ReadLine();
         }
+    }
+
+    public static class Globals
+    {
+        public static StringBuilder buyercsv = new StringBuilder();
+        public static StringBuilder sellercsv = new StringBuilder();
     }
 
     public class MyEnv : EnvironmentMas
