@@ -72,7 +72,7 @@ namespace Coursework1
                     if (amountToBuy > 0)
                     {
                         Send(message.Sender, $"propose {utilityBuyPrice - 1}");
-                        Console.WriteLine("buyerpropose " + Environment.Memory["Turn"]);
+                        Console.WriteLine($"{this.Name} bids £{utilityBuyPrice - 1} Turn " + Environment.Memory["Turn"]);
                     }
                     else
                     {
@@ -121,12 +121,15 @@ namespace Coursework1
                 //figure out how this works with bids which are the same, maybe change it 
                 var highest = proposals.OrderByDescending(x => x.Value).FirstOrDefault();
 
-                Send(highest.Key, $"bidaccepted {highest.Value}");
+                var secondHighest = proposals.OrderByDescending(x => x.Value).ElementAtOrDefault(1);
+
+
+                Send(highest.Key, $"bidaccepted {secondHighest.Value}");
 
                 amountToSell--;
-                money += highest.Value;
+                money += secondHighest.Value;
 
-                Console.WriteLine("seller accepted " + highest.Key + " " + Environment.Memory["Turn"]);
+                Console.WriteLine($"{highest.Key} wins and pays £{secondHighest.Value}" + " " + Environment.Memory["Turn"]);
 
                 Send("organiser", "reset");
 
