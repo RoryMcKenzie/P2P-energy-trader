@@ -87,7 +87,9 @@ namespace Coursework1
 
                 Console.WriteLine("organiser evaluated proposals " + Environment.Memory["Turn"]);
 
-                //figure out how this works with bids which are the same, maybe change it 
+                //maybe make seller send utilitySellPrice instead and the lowest wins, so that the remaining sellers will get decent money 
+
+                //change to OrderByAscending if thats the case
                 var highest = proposals.OrderByDescending(x => x.Value).FirstOrDefault();
 
                 Console.WriteLine("organiser accepted " + highest.Key + " " + Environment.Memory["Turn"]);
@@ -104,6 +106,7 @@ namespace Coursework1
             {
                 Console.WriteLine("no sellers left");
                 Broadcast("auctionend");
+
             }
         }
     }

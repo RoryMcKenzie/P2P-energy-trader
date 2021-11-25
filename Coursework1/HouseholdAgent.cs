@@ -16,6 +16,12 @@ namespace Coursework1
         private int amountToSell = 0;
         private int money = 0;
 
+        private int boughtFromSeller = 0;
+        private int boughtFromUtility = 0;
+
+        private int soldToBuyer = 0;
+        private int soldToUtility = 0;
+
         private Dictionary<string, int> proposals;
         private List<string> buyerList;
 
@@ -49,7 +55,7 @@ namespace Coursework1
                         amountToBuy = dailyNeed - dailyGenerate;
                     }                    
                     string content = $"{status} {amountToSell} {amountToBuy}";
-                    Console.WriteLine(this.Name + " - Needs:" + dailyNeed.ToString() + "kWh, Generates: " + dailyGenerate.ToString() + "kWh, BuyPrice: £" + utilityBuyPrice.ToString() + ", SellPrice: £" + utilitySellPrice.ToString() + " " + status);
+                    Console.WriteLine(this.Name + " - Needs:" + dailyNeed.ToString() + "kWh, Generates: " + dailyGenerate.ToString() + "kWh, BuyPrice: " + utilityBuyPrice.ToString() + " pence, SellPrice: " + utilitySellPrice.ToString() + "pence " + status);
                     Send("organiser", content);
                     Console.WriteLine("inform " + Environment.Memory["Turn"]);
                     break;
@@ -72,7 +78,7 @@ namespace Coursework1
                     if (amountToBuy > 0)
                     {
                         Send(message.Sender, $"propose {utilityBuyPrice - 1}");
-                        Console.WriteLine($"{this.Name} bids £{utilityBuyPrice - 1} Turn " + Environment.Memory["Turn"]);
+                        Console.WriteLine($"{this.Name} bids {utilityBuyPrice - 1} pence, Turn " + Environment.Memory["Turn"]);
                     }
                     else
                     {
@@ -98,6 +104,7 @@ namespace Coursework1
                     break;
                 case "bidaccepted":
                     money -= Int32.Parse(parameters[0]);
+                    boughtFromSeller++;
                     amountToBuy--;
                     break;
                 case "auctionend":
@@ -123,13 +130,20 @@ namespace Coursework1
 
                 var secondHighest = proposals.OrderByDescending(x => x.Value).ElementAtOrDefault(1);
 
+                var paid = secondHighest;
 
-                Send(highest.Key, $"bidaccepted {secondHighest.Value}");
+                if (secondHighest.Value == 0)
+                {
+                     paid = highest;
+                } 
+
+                Send(highest.Key, $"bidaccepted {paid.Value}");
 
                 amountToSell--;
-                money += secondHighest.Value;
+                soldToBuyer++;
+                money += paid.Value;
 
-                Console.WriteLine($"{highest.Key} wins and pays £{secondHighest.Value}" + " " + Environment.Memory["Turn"]);
+                Console.WriteLine($"{highest.Key} wins and pays {paid.Value} pence" + " " + Environment.Memory["Turn"]);
 
                 Send("organiser", "reset");
 
@@ -146,6 +160,7 @@ namespace Coursework1
         //Propose in response to organiser CFP
         public void SellerPropose()
         {
+            //maybe make it send utilitySellPrice instead and lowest wins, so that the remaining sellers will get decent money 
             Send("organiser", $"propose {amountToSell}");
         }
 
@@ -176,19 +191,36 @@ namespace Coursework1
 
         public void BuyAndSellFromProvider()
         {
+            //if agent is a buyer still to buy energy
             if (amountToBuy > 0)
             {
                 money -= (amountToBuy * utilityBuyPrice);
+                boughtFromUtility = amountToBuy;
                 amountToBuy = 0;
             }
 
+            //if agent is a seller still to sell energy
             if (amountToSell > 0)
             {
                 money += (amountToSell * utilitySellPrice);
+                soldToUtility = amountToSell;
                 amountToSell = 0;
             }
-            
-            Console.WriteLine($"{this.Name}: £{money}");
+
+            if (status == "buyer")
+            {
+                int totalBought = boughtFromSeller + boughtFromUtility;
+                Console.WriteLine($"{this.Name} bought {totalBought} kWh for a total cost of {(Math.Abs(money))} pence");
+                Console.WriteLine($"To buy this only from the utility company would've cost {totalBought * utilityBuyPrice} pence");
+
+            }
+            else
+            {
+                int totalSold = soldToBuyer + soldToUtility;
+                Console.WriteLine($"{this.Name} sold {soldToBuyer + soldToUtility} kWh for a total of {(money)} pence");
+                Console.WriteLine($"To sell this only to the utility company would've only made {totalSold * utilitySellPrice} pence profit");
+
+            }
         }
     }
 }
