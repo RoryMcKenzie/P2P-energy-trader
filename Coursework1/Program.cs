@@ -45,9 +45,9 @@ namespace Coursework1
 
             string total = Globals.messageCount + "," + watch.ElapsedMilliseconds.ToString();
 
-            Console.WriteLine(watch.ElapsedMilliseconds.ToString());
+            //Console.WriteLine(watch.ElapsedMilliseconds.ToString());
 
-            Console.WriteLine("message count: " + Globals.messageCount);
+            //Console.WriteLine("message count: " + Globals.messageCount);
 
            //File.AppendAllText(countFilepath, total);
            //File.AppendAllText(countFilepath, "\n");

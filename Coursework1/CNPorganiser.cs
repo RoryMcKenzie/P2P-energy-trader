@@ -11,7 +11,8 @@ namespace Coursework1
         private List<string> buyerList;
 
         private Dictionary<string,int> proposals;
-        private int j = 0;
+        private int sellerMessagesReceived = 0;
+        private int householdsFinished = 0;
 
         public override void Setup()
         {
@@ -25,6 +26,7 @@ namespace Coursework1
             message.Parse(out string action, out List<String> parameters);
             switch (action)
             {
+                //Received when a seller tells the organiser their status
                 case "seller":
                     sellerList.Add(message.Sender);
                     if (buyerList.Count + sellerList.Count == Globals.householdAgentNo)
@@ -32,6 +34,8 @@ namespace Coursework1
                         SendCallsForProposals();
                     } 
                     break;
+
+                //Received when a seller tells the organiser their status
                 case "buyer":
                     buyerList.Add(message.Sender);
                     if (buyerList.Count + sellerList.Count == Globals.householdAgentNo)
@@ -39,43 +43,60 @@ namespace Coursework1
                         SendCallsForProposals();
                     } 
                     break;
-                case "propose":
-                    j++;
+
+                //Received when a seller submits a proposal
+                case "Seller_Propose":
+                    sellerMessagesReceived++;
                     proposals.Add(message.Sender, Int32.Parse(parameters[0]));
-                    if (j == sellerList.Count)
+                    if (sellerMessagesReceived == sellerList.Count)
                     {
                         EvaluateProposals();
                     }
                     break;
-                case "nopropose":
-                    j++;
-                    if (j == sellerList.Count)
+
+                //Received when a seller submits a rejection
+                case "Seller_Reject":
+                    sellerMessagesReceived++;
+                    if (sellerMessagesReceived == sellerList.Count)
                     {
                         EvaluateProposals();
                     } 
                     break;
-                case "reset":
-                    proposals.Clear();
-                    SendCallsForProposals();
-                    j = 0;
-                    break;
-                case "buyerlistrequest":
+
+                //Received when seller requests the BuyerList
+                case "Request_BuyerList":
                     string buyerliststring = "";
-                    foreach(string buyer in buyerList)
+                    foreach (string buyer in buyerList)
                     {
                         buyerliststring += (" " + buyer);
-                    }                    
-                    Send(message.Sender, "buyerlist" + buyerliststring);
+                    }
+                    Send(message.Sender, "BuyerList" + buyerliststring);
                     Globals.messageCount++;
                     break;
-            }
+
+                //Received once an auction has ended and next seller is to be chosen
+                case "Reset":
+                    proposals.Clear();
+                    SendCallsForProposals();
+                    sellerMessagesReceived = 0;
+                    break;
+                //Received once all HouseholdAgents have bought and sold everything
+                case "Done":
+                    householdsFinished++;
+                    if(householdsFinished == 10)
+                    {
+                        Console.WriteLine("\nFinal totals: \n");
+                        Broadcast("final");
+                    }
+                    break;
+            }   
         }
 
         private void SendCallsForProposals()
         {
             foreach (string seller in sellerList)
             {
-                Send(seller, "organisercfp");
+                Send(seller, "CFP_Sellers");
                 Globals.messageCount++;
             }
         }
@@ -84,31 +105,23 @@ namespace Coursework1
         {
             if (proposals.Count != 0)
             {
-
-               // Console.WriteLine("organiser evaluated proposals " + Environment.Memory["Turn"]);
-
-                //maybe make seller send utilitySellPrice instead and the lowest wins, so that the remaining sellers will get decent money 
-
-                //change to OrderBy if thats the case
                 var highest = proposals.OrderByDescending(x => x.Value).FirstOrDefault();
-
-               // Console.WriteLine("organiser accepted " + highest.Key + " " + Environment.Memory["Turn"]);
 
                 foreach (string seller in sellerList)
                 {
                     if (seller == highest.Key)
                     {
-                        Send(seller, "accepted");
+                        Send(seller, "Seller_BidAccepted");
                         Globals.messageCount++;
                     }
                 }
             }
             else
             {
-                //Console.WriteLine("no sellers left");
-                Broadcast("auctionend");
+                Console.WriteLine("\nThere are no remaining sellers.");
+                Broadcast("AuctionEnd");
+                Console.WriteLine();
                 Globals.messageCount += Globals.broadcastNo;
-
             }
         }
     }

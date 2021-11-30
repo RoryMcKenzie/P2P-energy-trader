@@ -27,7 +27,7 @@ namespace Coursework1
         private Dictionary<string, int> proposals;
         private List<string> buyerList;
 
-        private int j = 0;
+        private int buyerMessagesReceived = 0;
 
         public override void Setup()
         {
@@ -42,6 +42,7 @@ namespace Coursework1
             message.Parse(out string action, out List<String> parameters);
             switch (action)
             {
+                //All HouseholdAgents receive this and send their status to the organiser
                 case "inform":
                     dailyNeed = Int32.Parse(parameters[0]);
                     dailyGenerate = Int32.Parse(parameters[1]);
@@ -58,72 +59,89 @@ namespace Coursework1
                         amountToBuy = dailyNeed - dailyGenerate;
                     }                    
                     string content = $"{status} {amountToSell} {amountToBuy}";
-                    //replace with a linq type string like above for neatness
                     Console.WriteLine($"{this.Name} - Needs {dailyNeed} kWh, generates {dailyGenerate} kWh, buy from utility for {utilityBuyPrice} pence, sell to utility for {utilitySellPrice} pence, type: {status}");
                     Send("organiser", content);
                     Globals.messageCount++;
-
                     break;
-                case "organisercfp":
+
+                //Sellers receive this from organiser and propose or reject the request
+                case "CFP_Sellers":
                     if (amountToSell > 0)
                     {
                         SellerPropose();
                     }
                     else
                     {
-                        Send("organiser", "nopropose");
+                        Send("organiser", "Seller_Reject");
                         Globals.messageCount++;
                     }
                     break;
-                case "accepted":
+
+                //Sellers receive this when their bid has been accepted by the organiser,
+                //meaning they are the next seller
+                case "Seller_BidAccepted":
                     CallForProposals();
                     break;
-                //buyer receives seller cfp
-                case "sellercfp":
+
+                //Received by a seller when the organiser sends the list of all buyers
+                case "BuyerList":
+                    foreach (string buyer in parameters)
+                    {
+                        buyerList.Add(buyer);
+                    }
+                    CallForProposals();
+                    break;
+
+                //Buyers receive this from seller and propose or reject the request
+                case "CFP_Buyers":
                     if (amountToBuy > 0)
                     {
-                        Send(message.Sender, $"propose {utilityBuyPrice - 1}");
+                        Send(message.Sender, $"Buyer_Propose {utilityBuyPrice - 1}");
                         Globals.messageCount++;
-                        Console.WriteLine($"{this.Name} bids {utilityBuyPrice - 1} pence");
+                        Console.WriteLine($"    {this.Name} bids {utilityBuyPrice - 1} pence");
                     }
                     else
                     {
-                        Send(message.Sender, "nopropose");
+                        Send(message.Sender, "Buyer_Reject");
                         Globals.messageCount++;
                     }
                     break;
-                //seller receives proposal from buyer
-                case "propose":
-                    j++;
+
+                //Sellers receive this when a buyer submits a proposal
+                case "Buyer_Propose":
+                    buyerMessagesReceived++;
                     proposals.Add(message.Sender, Int32.Parse(parameters[0]));
-                    //Console.WriteLine("receiveproposal " + Environment.Memory["Turn"]);
-                    if (j == buyerList.Count)
+                    if (buyerMessagesReceived == buyerList.Count)
                     {
                         EvaluateProposals();
                     }                    
                     break;
-                case "nopropose":
-                    j++;
-                    if (j == buyerList.Count)
+
+                //Sellers receive this when a buyer submits a rejection
+                case "Buyer_Reject":
+                    buyerMessagesReceived++;
+                    if (buyerMessagesReceived == buyerList.Count)
                     {
                         EvaluateProposals();
                     }
                     break;
-                case "bidaccepted":
+
+                //Buyers receive this when their bid has been accepted by the seller,
+                //meaning they have won the kWh of energy
+                case "Buyer_BidAccepted":
                     money -= Int32.Parse(parameters[0]);
                     boughtFromSeller++;
                     boughtFromSellerMoney += Int32.Parse(parameters[0]);
                     amountToBuy--;
                     break;
-                case "auctionend":
+
+                //Received when the auction is finished because there are no more remaining buyers or sellers
+                case "AuctionEnd":
                     BuyAndSellFromProvider();
                     break;
-                case "buyerlist":
-                    foreach(string buyer in parameters)
-                    {
-                        buyerList.Add(buyer);
-                    }
-                    CallForProposals();
+
+                case "final":
+                    FinalTotal();
                     break;
             }
         }
@@ -145,7 +163,7 @@ namespace Coursework1
                      paid = highest;
                 } 
 
-                Send(highest.Key, $"bidaccepted {paid.Value}");
+                Send(highest.Key, $"Buyer_BidAccepted {paid.Value}");
                 Globals.messageCount++;
 
                 amountToSell--;
@@ -153,19 +171,18 @@ namespace Coursework1
                 soldToBuyerMoney += paid.Value;
                 money += paid.Value;
 
-                Console.WriteLine($"\n{highest.Key} wins and pays {paid.Value} pence");
+                Console.WriteLine($"\n    {highest.Key} wins and pays {paid.Value} pence");                
 
-
-
-                Send("organiser", "reset");
+                Send("organiser", "Reset");
                 Globals.messageCount++;
 
                 Reset();
             }
             else
             {
-                //Console.WriteLine("no buyers left");
-                Broadcast("auctionend");
+                Console.WriteLine("    There are no more remaining buyers.");
+                Broadcast("AuctionEnd");
+                Console.WriteLine();
                 Globals.messageCount += Globals.broadcastNo;
                 BuyAndSellFromProvider();
             }
@@ -174,22 +191,18 @@ namespace Coursework1
         //Propose in response to organiser CFP
         public void SellerPropose()
         {
-            //maybe make it send utilitySellPrice instead and lowest wins, so that the remaining sellers will get decent money 
-            Send("organiser", $"propose {amountToSell}");
+            Send("organiser", $"Seller_Propose {amountToSell}");
             Globals.messageCount++;
         }
 
         //CFP for buyers
         public void CallForProposals()
         {
-            
-
             if (buyerList.Count == 0)
             {
                 //sends a message to organiser and gets a list of buyers 
-                Send("organiser", "buyerlistrequest");
+                Send("organiser", "Request_BuyerList");
                 Globals.messageCount++;
-                //Console.WriteLine("buyerlistrequest");
             }
             else
             {
@@ -197,7 +210,7 @@ namespace Coursework1
                 //Console.WriteLine("sellercfp " + Environment.Memory["Turn"]);
                 foreach (string buyer in buyerList)
                 {
-                    Send(buyer, "sellercfp");
+                    Send(buyer, "CFP_Buyers");
                     Globals.messageCount++;
                 }
             }
@@ -205,7 +218,7 @@ namespace Coursework1
 
         public void Reset()
         {
-            j = 0;
+            buyerMessagesReceived = 0;
             proposals.Clear();
         }
 
@@ -228,14 +241,16 @@ namespace Coursework1
                 soldToUtility = amountToSell;
                 amountToSell = 0;
             }
+            Send("organiser", "Done");           
+        }
 
-            Console.WriteLine("");
-
+        public void FinalTotal()
+        {
             if (status == "buyer")
             {
                 int totalBought = boughtFromSeller + boughtFromUtility;
                 Console.WriteLine($"{this.Name} bought {totalBought} kWh for a total cost of {(Math.Abs(money))} pence");
-                //Console.WriteLine($"To buy this only from the utility company would've cost {totalBought * utilityBuyPrice} pence");
+                Console.WriteLine($"To buy this only from the utility company would've cost {totalBought * utilityBuyPrice} pence\n");
 
                 /* string first = boughtFromSeller.ToString();
                 string second = boughtFromSellerMoney.ToString();
@@ -251,8 +266,8 @@ namespace Coursework1
             else
             {
                 int totalSold = soldToBuyer + soldToUtility;
-               // Console.WriteLine($"{this.Name} sold {soldToBuyer + soldToUtility} kWh for a total of {(money)} pence");
-               // Console.WriteLine($"To sell this only to the utility company would've only made {totalSold * utilitySellPrice} pence");
+                Console.WriteLine($"{this.Name} sold {soldToBuyer + soldToUtility} kWh for a total of {(money)} pence");
+                Console.WriteLine($"To sell this only to the utility company would've only made {totalSold * utilitySellPrice} pence\n");
 
                 /*string first = soldToBuyer.ToString();
                 string second = soldToBuyerMoney.ToString();
@@ -266,5 +281,6 @@ namespace Coursework1
                 Globals.sellercsv.AppendLine(newLine); */
             }
         }
+
     }
 }
