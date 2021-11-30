@@ -27,18 +27,16 @@ namespace Coursework1
             {
                 case "seller":
                     sellerList.Add(message.Sender);
-                    if (buyerList.Count + sellerList.Count == 10)
+                    if (buyerList.Count + sellerList.Count == Globals.householdAgentNo)
                     {
                         SendCallsForProposals();
-                        Console.WriteLine("cfpturn " + Environment.Memory["Turn"]);
                     } 
                     break;
                 case "buyer":
                     buyerList.Add(message.Sender);
-                    if (buyerList.Count + sellerList.Count == 10)
+                    if (buyerList.Count + sellerList.Count == Globals.householdAgentNo)
                     {
                         SendCallsForProposals();
-                        Console.WriteLine("cfpturn " + Environment.Memory["Turn"]);
                     } 
                     break;
                 case "propose":
@@ -68,6 +66,7 @@ namespace Coursework1
                         buyerliststring += (" " + buyer);
                     }                    
                     Send(message.Sender, "buyerlist" + buyerliststring);
+                    Globals.messageCount++;
                     break;
             }
         }
@@ -77,6 +76,7 @@ namespace Coursework1
             foreach (string seller in sellerList)
             {
                 Send(seller, "organisercfp");
+                Globals.messageCount++;
             }
         }
 
@@ -85,27 +85,29 @@ namespace Coursework1
             if (proposals.Count != 0)
             {
 
-                Console.WriteLine("organiser evaluated proposals " + Environment.Memory["Turn"]);
+               // Console.WriteLine("organiser evaluated proposals " + Environment.Memory["Turn"]);
 
                 //maybe make seller send utilitySellPrice instead and the lowest wins, so that the remaining sellers will get decent money 
 
-                //change to OrderByAscending if thats the case
+                //change to OrderBy if thats the case
                 var highest = proposals.OrderByDescending(x => x.Value).FirstOrDefault();
 
-                Console.WriteLine("organiser accepted " + highest.Key + " " + Environment.Memory["Turn"]);
+               // Console.WriteLine("organiser accepted " + highest.Key + " " + Environment.Memory["Turn"]);
 
                 foreach (string seller in sellerList)
                 {
                     if (seller == highest.Key)
                     {
                         Send(seller, "accepted");
+                        Globals.messageCount++;
                     }
                 }
             }
             else
             {
-                Console.WriteLine("no sellers left");
+                //Console.WriteLine("no sellers left");
                 Broadcast("auctionend");
+                Globals.messageCount += Globals.broadcastNo;
 
             }
         }

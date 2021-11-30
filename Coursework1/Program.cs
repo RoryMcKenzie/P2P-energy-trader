@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using System.Diagnostics;
 using ActressMas;
 
 namespace Coursework1
@@ -9,30 +10,49 @@ namespace Coursework1
     {
         static void Main(string[] args)
         {
-            var env = new MyEnv(noTurns: 100);
-            var e = new EnvironmentAgent(); env.Add(e, "environment");
+            Stopwatch watch = new Stopwatch();
 
-            int noHouseholds = 10;
+            watch.Start();
 
-            for (int i = 0; i < noHouseholds; i++)
+            var env = new EnvironmentMas(noTurns: 1000, randomOrder: false, parallel: false);
+            EnvironmentAgent e = new EnvironmentAgent(); env.Add(e, "environment");
+
+            //int noHouseholds = 200;
+
+            for (int i = 0; i < Globals.householdAgentNo; i++)
             {
                 var householdAgent = new HouseholdAgent();
                 env.Add(householdAgent, $"household{i + 1}");
             }
 
-            var org1 = new CNPorganiser(); env.Add(org1, "organiser");
+            CNPorganiser org1 = new CNPorganiser(); env.Add(org1, "organiser");
 
-            var sellerFilepath = @"C:\Users\rorym\Documents\General\Uni\MAS\seller_results.csv";
-            var buyerFilepath = @"C:\Users\rorym\Documents\General\Uni\MAS\buyer_results.csv";
+            Globals.broadcastNo = Globals.householdAgentNo + 1; //households + organiser + environmentagent, but -1 because broadcast doesn't include sender
+
+            /* string sellerFilepath = @"C:\Users\rorym\Documents\General\Uni\MAS\seller_amountToSell.csv";
+            string buyerFilepath = @"C:\Users\rorym\Documents\General\Uni\MAS\buyer_amountToSell.csv"; 
+            string countFilepath = @"C:\Users\rorym\Documents\General\Uni\MAS\count_50_2.csv"; */
 
             env.Start();
-          
-            File.AppendAllText(sellerFilepath, Globals.sellercsv.ToString());
+
+            /*File.AppendAllText(sellerFilepath, Globals.sellercsv.ToString());
             File.AppendAllText(sellerFilepath, "\n");
 
             File.AppendAllText(buyerFilepath, Globals.buyercsv.ToString());
-            File.AppendAllText(buyerFilepath, "\n");
-            //Console.ReadLine();
+            File.AppendAllText(buyerFilepath, "\n"); */
+
+            watch.Stop();
+
+            string total = Globals.messageCount + "," + watch.ElapsedMilliseconds.ToString();
+
+            Console.WriteLine(watch.ElapsedMilliseconds.ToString());
+
+            Console.WriteLine("message count: " + Globals.messageCount);
+
+           //File.AppendAllText(countFilepath, total);
+           //File.AppendAllText(countFilepath, "\n");
+
+            Console.ReadLine();
         }
     }
 
@@ -40,19 +60,9 @@ namespace Coursework1
     {
         public static StringBuilder buyercsv = new StringBuilder();
         public static StringBuilder sellercsv = new StringBuilder();
-    }
+        public static int householdAgentNo = 10;
+        public static int messageCount = 0;
 
-    public class MyEnv : EnvironmentMas
-    {
-        public MyEnv(int noTurns = 0, int delayAfterTurn = 0, bool randomOrder = true, Random rand = null, bool parallel = false)
-            : base(noTurns, delayAfterTurn, randomOrder, rand, parallel)
-        {
-            Memory["Turn"] = 0;
-        }
-
-        public override void TurnFinished(int turn)
-        {
-            Memory["Turn"] = turn + 1;  // turn is updated after TurnFinished
-        }
+        public static int broadcastNo = 0;
     }
 }
