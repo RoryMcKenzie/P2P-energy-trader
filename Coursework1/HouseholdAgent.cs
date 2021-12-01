@@ -173,10 +173,10 @@ namespace Coursework1
 
                 Console.WriteLine($"\n    {highest.Key} wins and pays {paid.Value} pence");                
 
-                Send("organiser", "Reset");
+                Send("organiser", "NextAuction");
                 Globals.messageCount++;
 
-                Reset();
+                NextAuction();
             }
             else
             {
@@ -216,7 +216,7 @@ namespace Coursework1
             }
         }
 
-        public void Reset()
+        public void NextAuction()
         {
             buyerMessagesReceived = 0;
             proposals.Clear();

@@ -75,7 +75,7 @@ namespace Coursework1
                     break;
 
                 //Received once an auction has ended and next seller is to be chosen
-                case "Reset":
+                case "NextAuction":
                     proposals.Clear();
                     SendCallsForProposals();
                     sellerMessagesReceived = 0;

@@ -62,7 +62,6 @@ namespace Coursework1
         public static StringBuilder sellercsv = new StringBuilder();
         public static int householdAgentNo = 10;
         public static int messageCount = 0;
-
         public static int broadcastNo = 0;
     }
 }
