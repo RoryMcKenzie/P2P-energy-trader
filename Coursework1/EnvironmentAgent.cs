@@ -25,7 +25,6 @@ namespace Coursework1
         private const int MaxPriceToSellToUtility = 5; //max possible price to sell 1kWh to the utility company (in pence)
 
         public override void Act(Message message)
-
         {
             switch (message.Content)
             {

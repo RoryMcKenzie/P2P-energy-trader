@@ -106,7 +106,7 @@ namespace Coursework1
             if (proposals.Count != 0)
             {
                 var highest = proposals.OrderByDescending(x => x.Value).FirstOrDefault();
-
+                
                 foreach (string seller in sellerList)
                 {
                     if (seller == highest.Key)

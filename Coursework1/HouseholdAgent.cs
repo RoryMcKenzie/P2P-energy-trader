@@ -139,7 +139,7 @@ namespace Coursework1
                 case "AuctionEnd":
                     BuyAndSellFromProvider();
                     break;
-
+                //Received when it's time to total up costs at end
                 case "final":
                     FinalTotal();
                     break;
@@ -207,7 +207,6 @@ namespace Coursework1
             else
             {
                 Console.WriteLine($"\nAuction Started - Seller: {this.Name} \n");
-                //Console.WriteLine("sellercfp " + Environment.Memory["Turn"]);
                 foreach (string buyer in buyerList)
                 {
                     Send(buyer, "CFP_Buyers");
@@ -252,6 +251,8 @@ namespace Coursework1
                 Console.WriteLine($"{this.Name} bought {totalBought} kWh for a total cost of {(Math.Abs(money))} pence");
                 Console.WriteLine($"To buy this only from the utility company would've cost {totalBought * utilityBuyPrice} pence\n");
 
+                //Commented out code below is to write to csv file, used this for analysing experiment data
+
                 /* string first = boughtFromSeller.ToString();
                 string second = boughtFromSellerMoney.ToString();
                 string third = boughtFromUtility.ToString();
@@ -268,6 +269,8 @@ namespace Coursework1
                 int totalSold = soldToBuyer + soldToUtility;
                 Console.WriteLine($"{this.Name} sold {soldToBuyer + soldToUtility} kWh for a total of {(money)} pence");
                 Console.WriteLine($"To sell this only to the utility company would've only made {totalSold * utilitySellPrice} pence\n");
+
+                //Commented out code below is to write to csv file, used this for analysing experiment data
 
                 /*string first = soldToBuyer.ToString();
                 string second = soldToBuyerMoney.ToString();

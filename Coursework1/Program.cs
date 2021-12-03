@@ -10,14 +10,13 @@ namespace Coursework1
     {
         static void Main(string[] args)
         {
-            Stopwatch watch = new Stopwatch();
 
-            watch.Start();
+            //Stopwatch was used to time program for report
+            //Stopwatch watch = new Stopwatch();
+            //watch.Start();
 
             var env = new EnvironmentMas(noTurns: 1000, randomOrder: false, parallel: false);
             EnvironmentAgent e = new EnvironmentAgent(); env.Add(e, "environment");
-
-            //int noHouseholds = 200;
 
             for (int i = 0; i < Globals.householdAgentNo; i++)
             {
@@ -29,9 +28,11 @@ namespace Coursework1
 
             Globals.broadcastNo = Globals.householdAgentNo + 1; //households + organiser + environmentagent, but -1 because broadcast doesn't include sender
 
+            //Below is code to write to a csv file
+
             /* string sellerFilepath = @"C:\Users\rorym\Documents\General\Uni\MAS\seller_amountToSell.csv";
             string buyerFilepath = @"C:\Users\rorym\Documents\General\Uni\MAS\buyer_amountToSell.csv"; 
-            string countFilepath = @"C:\Users\rorym\Documents\General\Uni\MAS\count_50_2.csv"; */
+            string countFilepath = @"C:\Users\rorym\Documents\General\Uni\MAS\count_50.csv"; */
 
             env.Start();
 
@@ -41,9 +42,9 @@ namespace Coursework1
             File.AppendAllText(buyerFilepath, Globals.buyercsv.ToString());
             File.AppendAllText(buyerFilepath, "\n"); */
 
-            watch.Stop();
+            //watch.Stop();
 
-            string total = Globals.messageCount + "," + watch.ElapsedMilliseconds.ToString();
+            //string total = Globals.messageCount + "," + watch.ElapsedMilliseconds.ToString();
 
             //Console.WriteLine(watch.ElapsedMilliseconds.ToString());
 
@@ -58,9 +59,13 @@ namespace Coursework1
 
     public static class Globals
     {
-        public static StringBuilder buyercsv = new StringBuilder();
-        public static StringBuilder sellercsv = new StringBuilder();
         public static int householdAgentNo = 10;
+
+        //Used for writing to csv
+        //public static StringBuilder buyercsv = new StringBuilder();
+        //public static StringBuilder sellercsv = new StringBuilder();
+       
+        //Used for counting messages for scaling purposes in report
         public static int messageCount = 0;
         public static int broadcastNo = 0;
     }
